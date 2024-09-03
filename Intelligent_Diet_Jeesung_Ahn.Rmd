@@ -17,7 +17,7 @@ output:
 bibliography: library.bib
 ---
 
-```{r setup, warning=FALSE, message=FALSE}
+```{r setup, warning=FALSE, message=FALSE, echo=FALSE}
 # Set options and load necessary packages
 options(scipen = 0, digits = 3, tibble.print_max = 50) 
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -175,14 +175,11 @@ The dataset's average nutrient values and focus on Canadian products limit gener
 
 # Appendix {#appendix}
 
-### Data Overview {.tabset}
-
-#### Missing Values in Original Dataset 
+### Missing Values in Original Dataset 
 ```{r missing_values,results='asis'}
 inspect.na(wide_data, summary = F)
 ```
 
-#### Full Summary of Clean Dataset
 ```{r,results='asis',cache=FALSE}
 dfSummary(data_mean_imp,  plain.ascii = FALSE, style = 'grid', graph.magnif = 0.3, 
          valid.col = FALSE, tmp.img.dir = "/tmp")
