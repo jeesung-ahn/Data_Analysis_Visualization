@@ -1,0 +1,231 @@
+---
+title: "Recommendations for an Intelligent Diet"
+author: "Jeesung Ahn"
+date: '04/15/2022'
+output:
+  html_document:
+    code_folding: hide
+    highlight: espresso
+    number_sections: no
+    theme: united
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: 4
+bibliography: library.bib
+---
+
+```{r setup, warning=FALSE, message=FALSE}
+# Set options and load necessary packages
+options(scipen = 0, digits = 3, tibble.print_max = 50) 
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+# Load packages with pacman
+if(!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, here, glmnet, car, data.table, summarytools, 
+               corrplot, GGally, varhandle, gtsummary, pROC, stargazer, 
+               sjPlot, report, tm, SnowballC, wordcloud, RColorBrewer, 
+               imputeTS, clValid, cluster, factoextra, fpc)
+
+# Set consistent theme for plots
+plot_aes <- theme_minimal() +
+  theme(legend.position = "top",
+        text = element_text(size = 15, family = "Futura Medium"),
+        axis.text = element_text(color = "black"),
+        axis.line = element_line(colour = "black"),
+        axis.ticks.y = element_blank())
+```
+
+```{r include=F}
+# Load primary analysis script
+source(here("source", "primary_analyses.R"))
+```
+
+# Executive Summary {#executive-summary}
+
+Dietary guidelines and nutrition labels guide public food choices, yet individual needs vary. This study aims to develop a personalized food recommendation algorithm based on nutrient profiles. I compared spectrum clustering and k-means clustering, finding k-means to be superior. This document outlines the methods, analyses, and practical applications of these findings.
+
+# Introduction {#introduction} 
+
+### Nutrition's Role in Health
+
+Diet significantly impacts health outcomes, from cardiovascular disease [@ShantaRetelny2008] to cognitive function [@Dani2005]. However, many people struggle with unhealthy eating habits, often due to an overabundance of food choices. Improving dietary decisions through better food groupings could help mitigate this issue.
+
+
+### Issues with Current Food Groupings
+ 
+Existing nutrition datasets categorize foods, but the methods are unclear, leading to inconsistencies in nutrient profiles within groups. This study reinterprets food groupings, aiming to create clusters that better align with individual dietary needs. Specifically, the results can be used to identify foods with the optimal combination of nutrients tailored to a person's dietary requirements.
+
+### Study Goals
+
+This analysis of public nutrient datasets aims to develop an algorithm that recommends foods based on nutrient profiles, identifying clusters with high intra-group and low inter-group similarity.
+
+# Methods {#methods}
+
+### Exploratory Data Analysis {#eda} 
+
+I used the [Canadian Nutrient File](https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/nutrient-data/canadian-nutrient-file-2015-download-files.html) (2015) dataset, containing nutrient values for over `r nrow(wide_data)` foods. After merging datasets by unique identifiers, I ran exploratory analyses. Despite some redundant and missing data, I opted for mean imputation to handle missing values, ensuring consistency in subsequent analyses.
+
+### Main Analyses {#analyses}
+I compared k-means and spectrum clustering to group foods by nutrient profiles, aiming for high intra-group similarity and low inter-group similarity. The silhouette method was used to identify optimal cluster numbers, and data were standardized before analysis.
+
+
+# Results {#results}
+
+### K-means vs. Spectrum Clustering
+
+#### K-means clustering
+
+Using the silhouette method, 2 clusters were identified ([see appendix](#clustering)). K-means clustering resulted in a high proportion of total sum of squares explained by between-cluster sum of squares, indicating good cluster separation.
+
+```{r}
+clusterplot1
+```
+
+#### Spectrum Clustering
+
+A scree plot guided the selection of 10 principal components (PCs) for spectrum clustering. K-means clustering on these PCs produced 8 clusters ([see appendix](#clustering)). The plot below shows the 8 clusters formed using spectrum clustering across the first two PCs, with labels for the centroid of each cluster.
+
+```{r}
+clusterplot3
+```
+
+#### Comparing Methods
+K-means outperformed spectrum clustering, as evidenced by higher silhouette width and Dunn index scores, suggesting better-defined clusters.
+
+```{r}
+plot_silhouette
+```
+
+```{r}
+plot_silhouette1
+```
+
+### Exploring "intelligent" clusters
+
+To explore the 'intelligent' clusters created through k-means clustering, we plotted word clouds of the most commonly used words within each cluster. For instance, the first word cloud shows that the most frequently used word in cluster 1 was 'raw,' followed by 'frozen,' 'boiled,' and 'canned.' This suggests that the cluster is defined by *how* a food is stored or cooked. In terms of specific foods, 'cereal' is frequently mentioned, along with other sugary foods.
+
+```{r}
+knitr::include_graphics(here("figs", "wc1.png"))
+```
+
+The word cloud for the second cluster shows that 'raw' is also frequently used in this cluster. Notably, a larger proportion of the foods in this cluster are related to meat and high-protein foods, such as 'meat,' 'lean,' 'fat,' and 'fish.'
+
+```{r}
+knitr::include_graphics(here("figs", "wc2.png"))
+```
+
+We also explored which group had the highest calorie content, finding that cluster 2 had a noticeably higher calorie content compared to cluster 1. Therefore, if someone is focused on reducing their overall calorie intake, it may be advisable to avoid foods found in cluster 2.
+
+```{r}
+kcal_cluster1
+```
+
+# Case Study: Designing a Muscle-Gain Diet
+
+After determining the best clustering approach based on food nutrient profiles, I provide a case study to illustrate how this tool can be used to make recommendations for a person with specific dietary needs. 
+
+Arnold is an aspiring professional bodybuilder interested in gaining muscle as quickly as possible. Understanding the importance of nutrition in muscle building, he plans to adjust his diet to achieve this goal, following the guidance he found [here](https://www.coachmag.co.uk/nutrition/healthy-eating/1263/12-best-nutrients-and-vitamins-building-muscle-and-burning-fat) and [here](https://www.muscleandfitness.com/nutrition/gain-mass/10-nutrition-rules-follow-if-you-want-build-muscle/). Arnold, currently weighing 180 pounds, aims to consume 1.5 grams of protein per pound of bodyweight, which totals 270 grams of protein daily. Additionally, it is recommended that he consumes between 2-3 grams of carbohydrates per pound, equating to 360-540 grams of total carbohydrates per day. Finally, he should intake at least 3600 kilocalories daily to support muscle gain. Arnold also seeks to consume several other nutrients at levels above 2 standard deviations above the mean due to their muscle-building properties, including calcium, biotin, iron, vitamin C, selenium, Omega-3, vitamin D, vitamin B12, copper, magnesium, riboflavin, and zinc.
+
+To simulate Arnold's dietary needs, I created a dataset from my main analyses and compared Arnold's daily nutrient targets to the daily nutrient recommendations for someone in the general population who matches him in all characteristics except activity level. I used the [DRI Calculator for Healthcare Professionals from the National Argicultural Library](https://www.nal.usda.gov/fnic/dri-calculator/) to determine a point of comparison for Arnold's nutrient intake. This tool calculates daily nutrient recommendations based on the Dietary Reference Intakes (DRIs) established by the Health and Medicine Division of the National Academies of Sciences, Engineering, and Medicine. I input gender (male), age (20), height (5 feet 10 inches), weight (180 pounds), and activity level (sedentary) for someone matching Arnold in all characteristics except activity level, as Arnold will have a higher activity level than the typical person. Therefore, the nutrient recommendations from this tool represent someone who matches Arnold in all characteristics but does not aspire to be a professional bodybuilder (and hence has a lower activity level). I then compared Arnold's nutrient goals to these recommendations. For example, Arnold aims to consume 3600 kilocalories per day, compared to the recommended 2734 kilocalories for someone less active. Thus, Arnold is consuming approximately 1.32 times the recommended kilocalories. Similarly, Arnold will consume 1.2 times the recommended carbohydrates, 4.15 times the recommended total carbohydrates, 270 times the recommended saturated fats, and 10.8 times the recommended total fat. I created nutrient data for Arnold by multiplying the average value of each target nutrient across the dataset by the amount Arnold is consuming above the mean (e.g., 1.32 * average value of nutrient across all foods) for kilocalories, total carbohydrates, saturated fats, protein, and total fat. For the nutrients Arnold aims to consume at least 2 standard deviations above the mean (i.e., calcium, biotin, iron, vitamin C, selenium, Omega-3, vitamin D, vitamin B12, copper, magnesium, riboflavin, and zinc), I calculated and inserted the value representing 2 standard deviations above the mean into Arnold's nutrient data.
+
+Next, I identified the cluster that most closely matched Arnold’s nutrient needs by finding the cluster with the smallest Euclidean distance from Arnold's goal nutrient profile. My analyses indicated that Arnold would best achieve his goals by eating foods in cluster 2. After identifying the cluster that best fit Arnold, I identified the foods with the smallest Euclidean distance from the center of cluster 2 in the original dataset to provide recommendations for the top 10 foods that meet Arnold's target nutrient profile. The table below clearly shows that Arnold should focus on meats and fish to achieve his goal of becoming a professional bodybuilder.
+
+```{r}
+distances %>% arrange(distances) %>% slice_head(n = 10) %>%  rename(
+    Food = wide_data.FoodDescription,
+    Distance = distances
+    ) %>% knitr::kable()
+```
+
+
+```{r, eval = F}
+# calories
+
+3600/2734
+
+# carbs
+
+450/mean(c(444,308))
+
+# protein
+
+270/65
+
+# sat fat
+
+mean(c(3600*(.05), 3600*(.1)))
+
+# overall fat
+# arnold is recommended to have 900 g of fat/day (avg of 20-30%)
+3600*.25
+
+900/mean(c(61, 106))
+```
+
+# Conclusion {#conclusion} 
+
+Contrary to our expectations, k-means clustering provided better results than spectrum clustering. Our case study illustrates how these clusters can inform dietary choices, such as optimizing nutrient intake for muscle gain.
+
+# Limitations {#limitations} 
+The dataset's average nutrient values and focus on Canadian products limit generalizability. Additionally, nutrient values are standardized, requiring portion size adjustments for practical use. Future work could expand these analyses to other countries and explore food-specific goals.
+
+
+# Appendix {#appendix}
+
+### Data Overview {.tabset} 
+
+#### Missing Values in Original Dataset 
+```{r missing_values, echo = TRUE, message = FALSE, warning = FALSE, results = 'markup'}
+inspect.na(wide_data, summary = F)
+```
+
+#### Full Summary of Clean Dataset
+```{r, results = 'asis'}
+dfSummary(data_mean_imp,  plain.ascii = FALSE, style = 'grid', graph.magnif = 0.3, 
+         valid.col = FALSE, tmp.img.dir = "/tmp")
+```
+
+### Optimal Number of Clusters {.tabset} 
+
+#### Optimal Number of Clusters for K-means {#clustering}
+
+```{r}
+silh_ID1
+```
+
+#### Scree Plot from PCA in Spectrum Clustering
+
+```{r}
+knitr::include_graphics(here("figs", "scree_p1.png"))
+```
+
+#### Optimal Number of Clusters for Spectrum Clustering on 10 PCs
+
+```{r}
+silh_ID3
+```
+
+### R Packages {.tabset}
+
+#### List of R Packages Used
+
+```{r, results = 'asis'}
+
+report_packages()
+```
+
+#### Citations for R Packages Used
+
+```{r, results = 'asis'}
+cite_packages()
+
+```
+
+# References
+
+\begingroup
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
