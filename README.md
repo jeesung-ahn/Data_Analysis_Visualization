@@ -1,7 +1,6 @@
 # Recommendations for an intelligent diet
 
-For the project summary, visit [HTML Project Summary](https://jeesung-ahn.github.io/docs/Intelligent_Diet_Jeesung_Ahn.html). 
-
+For a detailed overview of the project, visit [Project Summary](https://jeesung-ahn.github.io/docs/Intelligent_Diet_Jeesung_Ahn.html). 
 
 - The R Markdown code for the HTML write-up is available [here](https://github.com/jeesung-ahn/Nutrient_Clustering_Project/blob/main/Intelligent_Diet_Jeesung_Ahn.Rmd)
 
