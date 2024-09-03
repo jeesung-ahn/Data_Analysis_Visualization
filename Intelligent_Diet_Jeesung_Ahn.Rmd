@@ -175,15 +175,15 @@ The dataset's average nutrient values and focus on Canadian products limit gener
 
 # Appendix {#appendix}
 
-### Data Overview {.tabset} 
+### Data Overview {.tabset}
 
 #### Missing Values in Original Dataset 
-```{r missing_values, echo = TRUE, message = FALSE, warning = FALSE, results = 'markup'}
+```{r missing_values,results='asis'}
 inspect.na(wide_data, summary = F)
 ```
 
 #### Full Summary of Clean Dataset
-```{r, results = 'asis'}
+```{r,results='asis',cache=FALSE}
 dfSummary(data_mean_imp,  plain.ascii = FALSE, style = 'grid', graph.magnif = 0.3, 
          valid.col = FALSE, tmp.img.dir = "/tmp")
 ```

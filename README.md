@@ -1,6 +1,7 @@
 # Recommendations for an intelligent diet
 
-For the project summary, visit [here](https://htmlpreview.github.io/?https://github.com/jeesung-ahn/Nutrient_Clustering_Project/blob/main/Intelligent_Diet_Jeesung_Ahn.html) 
+For the project summary, visit [Project Summary](https://htmlpreview.github.io/?https://github.com/jeesung-ahn/Nutrient_Clustering_Project/blob/main/Intelligent_Diet_Jeesung_Ahn.html). 
+
 
 - The R Markdown code for the HTML write-up is available [here](https://github.com/jeesung-ahn/Nutrient_Clustering_Project/blob/main/Intelligent_Diet_Jeesung_Ahn.Rmd)
 
@@ -10,6 +11,5 @@ For the project summary, visit [here](https://htmlpreview.github.io/?https://git
 
 - To run the code, I recommend cloning the entire repository to your machine, which should allow you to execute it.
 
-* This project was completed by Jeesung Ahn (jeesung@sas.upenn.edu), in collaboration with Keana Richards (richards.keana@gmail.com) and Tonah Salas Ortiz.
 
-* Presented at [Data Science Live 2021](http://jh-cai.com/modern-data-mining/dsl.html), held at the Wharton School, University of Pennsylvania.
+*This project was completed by Jeesung Ahn (jeesung@sas.upenn.edu), in collaboration with Keana Richards (richards.keana@gmail.com) and Tonah Salas Ortiz. It was presented at [Data Science Live 2021](http://jh-cai.com/modern-data-mining/dsl.html), held at the Wharton School, University of Pennsylvania.*
